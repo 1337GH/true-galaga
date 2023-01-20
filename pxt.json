@@ -2,13 +2,15 @@
     "name": "True Galaga",
     "description": "",
     "dependencies": {
-        "device": "*"
+        "device": "*",
+        "star galadad": "pkg:star galadad.json"
     },
     "files": [
         "main.blocks",
         "main.ts",
         "README.md",
-        "assets.json"
+        "assets.json",
+        "star galadad.json"
     ],
     "testFiles": [
         "test.ts"
