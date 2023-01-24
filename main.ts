@@ -3,6 +3,7 @@ namespace SpriteKind {
     export const shooter = SpriteKind.create()
     export const Good = SpriteKind.create()
     export const Bad = SpriteKind.create()
+    export const DeadZone = SpriteKind.create()
 }
 sprites.onOverlap(SpriteKind.Good, SpriteKind.shooter, function (sprite, otherSprite) {
     for (let index = 0; index < 3; index++) {
@@ -64,12 +65,17 @@ sprites.onOverlap(SpriteKind.Good, SpriteKind.shooter, function (sprite, otherSp
     }
     otherSprite.destroy(effects.disintegrate, 500)
     sprite.destroy()
+    info.changeScoreBy(3)
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     sprites.destroyAllSpritesOfKind(SpriteKind.shield)
     sheild_true = true
     defense()
     laser = false
+})
+sprites.onOverlap(SpriteKind.DeadZone, SpriteKind.Enemy, function (sprite, otherSprite) {
+    otherSprite.destroy(effects.halo, 500)
+    info.changeLifeBy(-1)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     laser = true
@@ -79,6 +85,33 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         sheild_true = false
     }
 })
+sprites.onOverlap(SpriteKind.DeadZone, SpriteKind.shooter, function (sprite, otherSprite) {
+    otherSprite.destroy(effects.halo, 500)
+    info.changeLifeBy(-1)
+})
+function SpawnEnem () {
+    Evil = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . 6 . . . . . . . . 
+        . . . . . 6 6 6 6 6 . . . . . . 
+        . . . . 6 9 9 6 9 9 6 . . . . . 
+        . . . . 6 7 9 6 9 7 6 . . . . . 
+        . . . 6 6 7 7 . 7 7 6 6 . . . . 
+        . . . 9 7 6 . . . 6 7 9 . . . . 
+        . . . 7 6 . . . . . 6 7 . . . . 
+        . . . 7 . . . . . . . 7 . . . . 
+        . . . 9 7 . . . . . 7 9 . . . . 
+        . . . . 9 . . . . . 9 . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Enemy)
+    Evil.setPosition(randint(0, scene.screenWidth()), 0)
+    Evil.setVelocity(randint(-5, 5), 10)
+    Evil.setBounceOnWall(true)
+}
 function attack () {
     if (laser) {
         projectile3 = sprites.createProjectileFromSprite(img`
@@ -86,14 +119,14 @@ function attack () {
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
-            . . . . . . . f . . . . . . . . 
-            . . . . . . f 1 f . . . . . . . 
-            . . . . . f 1 2 1 f . . . . . . 
-            . . . . . f 1 2 1 f . . . . . . 
-            . . . . . f 1 2 1 f . . . . . . 
-            . . . . . . f 1 f . . . . . . . 
-            . . . . . . . f . . . . . . . . 
-            . . . . . . . . . . . . . . . . 
+            . . . . . . . 2 . . . . . . . . 
+            . . . . . . 3 1 3 . . . . . . . 
+            . . . . . . 3 1 3 . . . . . . . 
+            . . . . . 2 1 1 1 2 . . . . . . 
+            . . . . . 2 1 1 1 2 . . . . . . 
+            . . . . . . 3 1 3 . . . . . . . 
+            . . . . . . 3 2 3 . . . . . . . 
+            . . . . . . . 2 . . . . . . . . 
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
@@ -107,8 +140,13 @@ sprites.onOverlap(SpriteKind.Bad, SpriteKind.Player, function (sprite, otherSpri
     sprite.destroy(effects.fire, 500)
     info.changeLifeBy(-1)
 })
+sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Player, function (sprite, otherSprite) {
+    sprite.destroy(effects.disintegrate, 500)
+    info.changeLifeBy(-1)
+})
 sprites.onOverlap(SpriteKind.Bad, SpriteKind.shield, function (sprite, otherSprite) {
-    sprite.destroy(effects.trail, 500)
+    sprite.destroy(effects.fountain, 100)
+    info.changeScoreBy(5)
 })
 function defense () {
     shield = sprites.create(img`
@@ -131,13 +169,37 @@ function defense () {
         `, SpriteKind.shield)
     shield.setPosition(Ship.x, Ship.y + -6)
 }
+function SpawnShooter () {
+    Evil_red = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . c . . . . . . . . 
+        . . . . . c c c c c . . . . . . 
+        . . . . c a a c a a c . . . . . 
+        . . . . c b a c a b c . . . . . 
+        . . . c c b b . b b c c . . . . 
+        . . . a b c . . . c b a . . . . 
+        . . . b c . . . . . c b . . . . 
+        . . . b . . . . . . . b . . . . 
+        . . . a b . . . . . b a . . . . 
+        . . . . a . . . . . a . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, SpriteKind.shooter)
+    Evil_red.setPosition(randint(0, scene.screenWidth()), 0)
+    Evil_red.setVelocity(randint(-5, 5), 10)
+    Evil_red.setBounceOnWall(true)
+}
 sprites.onOverlap(SpriteKind.Good, SpriteKind.Enemy, function (sprite, otherSprite) {
     otherSprite.destroy(effects.disintegrate, 500)
     sprite.destroy()
+    info.changeScoreBy(1)
 })
-let Evil: Sprite = null
 let Evil_red: Sprite = null
 let projectile3: Sprite = null
+let Evil: Sprite = null
 let shield: Sprite = null
 let laser = false
 let sheild_true = false
@@ -162,10 +224,20 @@ Ship = sprites.create(img`
     . . . . . . . f . . . . . . . . 
     `, SpriteKind.Player)
 Ship.setPosition(51, 104)
+Ship.setStayInScreen(true)
 controller.moveSprite(Ship, 75, 0)
+SpawnShooter()
+let mySprite = sprites.create(img`
+    9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
+    8888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+    `, SpriteKind.DeadZone)
+mySprite.setPosition(80, 120)
 info.setLife(3)
+info.setScore(0)
 game.onUpdate(function () {
-	
+    while (info.score() >= 151) {
+        game.over(true)
+    }
 })
 game.onUpdateInterval(1000, function () {
     projectile22 = sprites.createProjectileFromSprite(img`
@@ -192,49 +264,9 @@ game.onUpdateInterval(1000, function () {
 game.onUpdateInterval(850, function () {
     if (Math.percentChance(75)) {
         if (Math.percentChance(20)) {
-            Evil_red = sprites.create(img`
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . c . . . . . . . . 
-                . . . . . c c c c c . . . . . . 
-                . . . . c a a c a a c . . . . . 
-                . . . . c b a c a b c . . . . . 
-                . . . c c b b . b b c c . . . . 
-                . . . a b c . . . c b a . . . . 
-                . . . b c . . . . . c b . . . . 
-                . . . b . . . . . . . b . . . . 
-                . . . a b . . . . . b a . . . . 
-                . . . . a . . . . . a . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                `, SpriteKind.shooter)
-            Evil_red.setPosition(randint(0, scene.screenWidth()), 0)
-            Evil_red.setVelocity(randint(-5, 5), 10)
-            Evil_red.setBounceOnWall(true)
+            SpawnShooter()
         } else {
-            Evil = sprites.create(img`
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . 6 . . . . . . . . 
-                . . . . . 6 6 6 6 6 . . . . . . 
-                . . . . 6 9 9 6 9 9 6 . . . . . 
-                . . . . 6 7 9 6 9 7 6 . . . . . 
-                . . . 6 6 7 7 . 7 7 6 6 . . . . 
-                . . . 9 7 6 . . . 6 7 9 . . . . 
-                . . . 7 6 . . . . . 6 7 . . . . 
-                . . . 7 . . . . . . . 7 . . . . 
-                . . . 9 7 . . . . . 7 9 . . . . 
-                . . . . 9 . . . . . 9 . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                . . . . . . . . . . . . . . . . 
-                `, SpriteKind.Enemy)
-            Evil.setPosition(randint(0, scene.screenWidth()), 0)
-            Evil.setVelocity(randint(-5, 5), 10)
-            Evil.setBounceOnWall(true)
+            SpawnEnem()
         }
     }
 })
