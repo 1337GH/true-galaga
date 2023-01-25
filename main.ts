@@ -5,6 +5,7 @@ namespace SpriteKind {
     export const Bad = SpriteKind.create()
     export const DeadZone = SpriteKind.create()
 }
+// Killing shooter and their aftermath
 sprites.onOverlap(SpriteKind.Good, SpriteKind.shooter, function (sprite, otherSprite) {
     for (let index = 0; index < 3; index++) {
         projectile22 = sprites.createProjectileFromSprite(img`
@@ -67,16 +68,19 @@ sprites.onOverlap(SpriteKind.Good, SpriteKind.shooter, function (sprite, otherSp
     sprite.destroy()
     info.changeScoreBy(3)
 })
+// Summons a shield and makes sure there's only one
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     sprites.destroyAllSpritesOfKind(SpriteKind.shield)
     sheild_true = true
     defense()
     laser = false
 })
+// Makes you take damage when enemies reach the bottom,
 sprites.onOverlap(SpriteKind.DeadZone, SpriteKind.Enemy, function (sprite, otherSprite) {
     otherSprite.destroy(effects.halo, 500)
     info.changeLifeBy(-1)
 })
+// Fires a laser and deletes a shield if ones there.
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     laser = true
     attack()
@@ -85,10 +89,12 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         sheild_true = false
     }
 })
+// Makes you take damage when enemies reach the bottom,
 sprites.onOverlap(SpriteKind.DeadZone, SpriteKind.shooter, function (sprite, otherSprite) {
     otherSprite.destroy(effects.halo, 500)
     info.changeLifeBy(-1)
 })
+// Spawns an enemy
 function SpawnEnem () {
     Evil = sprites.create(img`
         . . . . . . . . . . . . . . . . 
@@ -112,6 +118,7 @@ function SpawnEnem () {
     Evil.setVelocity(randint(-5, 5), 10)
     Evil.setBounceOnWall(true)
 }
+// Creates condition so shield and laser cant activate at the same time
 function attack () {
     if (laser) {
         projectile3 = sprites.createProjectileFromSprite(img`
@@ -136,18 +143,22 @@ function attack () {
         projectile3.setFlag(SpriteFlag.AutoDestroy, true)
     }
 }
+// Enemy projectile damage
 sprites.onOverlap(SpriteKind.Bad, SpriteKind.Player, function (sprite, otherSprite) {
     sprite.destroy(effects.fire, 500)
     info.changeLifeBy(-1)
 })
+// Enemy contact damage
 sprites.onOverlap(SpriteKind.Enemy, SpriteKind.Player, function (sprite, otherSprite) {
     sprite.destroy(effects.disintegrate, 500)
     info.changeLifeBy(-1)
 })
+// Sheilding
 sprites.onOverlap(SpriteKind.Bad, SpriteKind.shield, function (sprite, otherSprite) {
     sprite.destroy(effects.fountain, 100)
     info.changeScoreBy(5)
 })
+// Makes the shield above the ship
 function defense () {
     shield = sprites.create(img`
         . . . . . . . . . . . . . . . . 
@@ -169,6 +180,7 @@ function defense () {
         `, SpriteKind.shield)
     shield.setPosition(Ship.x, Ship.y + -6)
 }
+// Spawns the enemies with projectiles.
 function SpawnShooter () {
     Evil_red = sprites.create(img`
         . . . . . . . . . . . . . . . . 
@@ -192,11 +204,13 @@ function SpawnShooter () {
     Evil_red.setVelocity(randint(-5, 5), 10)
     Evil_red.setBounceOnWall(true)
 }
+// Killing enemy
 sprites.onOverlap(SpriteKind.Good, SpriteKind.Enemy, function (sprite, otherSprite) {
     otherSprite.destroy(effects.disintegrate, 500)
     sprite.destroy()
     info.changeScoreBy(1)
 })
+// Summons player and deadzone, makes movement. Spawns a shooter so their projectiles work. Sets life and score
 let Evil_red: Sprite = null
 let projectile3: Sprite = null
 let Evil: Sprite = null
@@ -234,11 +248,13 @@ let mySprite = sprites.create(img`
 mySprite.setPosition(80, 120)
 info.setLife(3)
 info.setScore(0)
+// Adds the win condition
 game.onUpdate(function () {
     while (info.score() >= 151) {
         game.over(true)
     }
 })
+// Creates the shooter's projectiles.
 game.onUpdateInterval(1000, function () {
     projectile22 = sprites.createProjectileFromSprite(img`
         . . . . . . . . . . . . . . . . 
@@ -261,6 +277,7 @@ game.onUpdateInterval(1000, function () {
     projectile22.setKind(SpriteKind.Bad)
     projectile22.setFlag(SpriteFlag.AutoDestroy, true)
 })
+// Spawns the enemy through chance for varieties sake.
 game.onUpdateInterval(850, function () {
     if (Math.percentChance(75)) {
         if (Math.percentChance(20)) {
@@ -270,6 +287,7 @@ game.onUpdateInterval(850, function () {
         }
     }
 })
+// Makes the shield follow.
 forever(function () {
     if (sheild_true) {
         shield.setVelocity(Ship.vx, 0)
